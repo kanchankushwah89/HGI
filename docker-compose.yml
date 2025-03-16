@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: hgi_db
+    environment:
+      POSTGRES_DB: hgi_db
+      POSTGRES_USER: hgi_user
+      POSTGRES_PASSWORD: hgi_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  pipeline:
+    build: .
+    container_name: hgi_pipeline
+    depends_on:
+      - db
+    volumes:
+      - ./resources:/app/resources
+
+volumes:
+  pgdata:

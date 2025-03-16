@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "hgi"
+version = "0.1.0"
+description = "ELT pipeline for CSV ingestion, transformation, and reporting"
+authors = ["Your Name <your@email.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pandas = "^2.2.3"
+SQLAlchemy = "^2.0.39"
+psycopg2 = "^2.9.10"
+docker = "^7.0.0"  # Assuming you want the latest stable version
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

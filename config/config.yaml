@@ -1,0 +1,6 @@
+database:
+  host: "db"
+  port: 5432
+  user: "hgi_user"
+  password: "hgi_password"
+  db_name: "hgi_db"
