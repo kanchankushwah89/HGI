@@ -1,52 +1,53 @@
 import pandas as pd
-import psycopg2
-
+from sqlalchemy import create_engine, Table, Column, String, Integer, Float, MetaData
+from sqlalchemy.exc import OperationalError
 from config.logger_config import logger
-
 
 class PostgresLoader:
     @staticmethod
     def load(df: pd.DataFrame, db_params: dict, table_name: str) -> None:
         logger.info(f"Loading data into PostgreSQL table: {table_name}")
-        conn = None
-        cursor = None
+
+        # Create the PostgreSQL connection string and use sqlalchemy to ingest data
+        connection_string = f"postgresql+psycopg2://{db_params['user']}:{db_params['password']}@" \
+                            f"{db_params['host']}:{db_params['port']}/{db_params['dbname']}"
+
+        engine = create_engine(connection_string)
+        metadata = MetaData()
+
         try:
-            conn = psycopg2.connect(**db_params)
-            cursor = conn.cursor()
+            # Establish a connection to the database
+            with engine.connect() as connection:
 
-            # Ensure the table exists
-            cursor.execute(f'''
-            CREATE TABLE IF NOT EXISTS {table_name} (
-                customer_id TEXT PRIMARY KEY,
-                age INT,
-                gender TEXT,
-                tenure INT,
-                monthly_charges FLOAT,
-                contract_type TEXT,
-                internet_service TEXT,
-                total_charges FLOAT,
-                tech_support TEXT,
-                churn TEXT
-            );
-            ''')
-            conn.commit()
+                # Check if the table exists
+                if not engine.dialect.has_table(connection, table_name):
+                    logger.info(f"Table {table_name} does not exist. Creating table...")
 
-            # Insert data into the table
-            insert_query = f'''
-            INSERT INTO {table_name} (customer_id, age, gender, tenure, monthly_charges, contract_type, 
-                                    internet_service, total_charges, tech_support, churn)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (customer_id) DO NOTHING;
-            '''
-            for _, row in df.iterrows():
-                cursor.execute(insert_query, tuple(row))
-            conn.commit()
-            logger.info(f"Data successfully loaded into {table_name}.")
+                    # Table definition
+                    table = Table(table_name, metadata,
+                                  Column('customer_id', String, primary_key=True),
+                                  Column('age', Integer),
+                                  Column('gender', String),
+                                  Column('tenure', Integer),
+                                  Column('monthly_charges', Float),
+                                  Column('contract_type', String),
+                                  Column('internet_service', String),
+                                  Column('total_charges', Float),
+                                  Column('tech_support', String),
+                                  Column('churn', String)
+                                  )
+                    # Create the table in the database
+                    metadata.create_all(engine)
+
+                #Insert dataframe at once
+                df.to_sql(table_name, engine, index=False, if_exists='replace', method='multi')
+                logger.info(f"Data successfully loaded into {table_name}.")
+
+        except OperationalError as e:
+            logger.error(f"Error during PostgreSQL operation for {table_name}: {e}")
 
         except Exception as e:
-            logger.error(f"Error during PostgreSQL operation for {table_name}: {e}")
+            logger.error(f"Unexpected error: {e}")
+
         finally:
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
+            engine.dispose()

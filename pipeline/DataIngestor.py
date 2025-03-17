@@ -3,8 +3,7 @@ import pandas as pd
 from config.logger_config import logger
 
 
-# Import logger from the centralized config
-
+#Ingests file in pandas dataframe
 class DataIngestor:
     @staticmethod
     def ingest(file_path: str) -> pd.DataFrame:

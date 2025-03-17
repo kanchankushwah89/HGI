@@ -10,7 +10,7 @@ python = "^3.10"
 pandas = "^2.2.3"
 SQLAlchemy = "^2.0.39"
 psycopg2 = "^2.9.10"
-docker = "^7.0.0"  # Assuming you want the latest stable version
+docker = "^7.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"

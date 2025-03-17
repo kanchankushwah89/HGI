@@ -1,7 +1,6 @@
-# logger_config.py
 import logging
 
-# Set up the logger
+# logger setup
 logging.basicConfig(
     level=logging.INFO,  # Default logging level
     format='%(asctime)s - %(levelname)s - %(message)s'  # Log format
