@@ -1,0 +1,1 @@
+0 * * * * root poetry run python /app/pipeline/main.py >> /var/log/cron.log 2>&1
